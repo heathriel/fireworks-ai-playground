@@ -6,6 +6,9 @@ Query and document embeddings are useful for:
 - Similarity matching
 - RAG retrieval pipelines
 """
+from dotenv import load_dotenv
+load_dotenv()
+
 from fireworks import Fireworks
 
 client = Fireworks()

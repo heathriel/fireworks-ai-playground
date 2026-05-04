@@ -1,3 +1,8 @@
+"""Load API key from .env if available."""
+from dotenv import load_dotenv
+load_dotenv()
+
+
 import json
 import urllib.request
 from fireworks import Fireworks
