@@ -73,7 +73,7 @@ tools = [
 
 # First call: model may return tool_calls
 response = client.chat.completions.create(
-    model="accounts/fireworks/models/kimi-k2-instruct-0905",
+    model="accounts/fireworks/models/qwen3-8b",
     messages=messages,
     tools=tools,
 )
@@ -99,7 +99,7 @@ if msg.tool_calls:
 
     # Second call: model uses tool results to answer
     response2 = client.chat.completions.create(
-        model="accounts/fireworks/models/kimi-k2-instruct-0905",
+        model="accounts/fireworks/models/qwen3-8b",
         messages=messages,
         tools=tools,
     )

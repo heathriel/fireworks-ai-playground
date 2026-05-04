@@ -1,18 +1,14 @@
-# Python
-__pycache__/
-*.py[cod]
-.venv/
-venv/
 .env
-.env.local
-
-# Pytest
+.env.*
+*.pyc
+__pycache__/
+*.egg-info/
+dist/
+build/
 .pytest_cache/
-.coverage
-htmlcov/
-
-# IDE
+.mypy_cache/
+.ruff_cache/
+*.log
+.DS_Store
 .idea/
 .vscode/
-*.swp
-*.swo

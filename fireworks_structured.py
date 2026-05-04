@@ -3,7 +3,7 @@ from fireworks import Fireworks
 client = Fireworks()
 
 response = client.chat.completions.create(
-  model="accounts/fireworks/models/deepseek-v3p1",
+  model="accounts/fireworks/models/llama-v3p3-70b-instruct",
   messages=[
     {
       "role": "user",
