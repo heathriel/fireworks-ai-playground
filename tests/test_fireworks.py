@@ -1,5 +1,6 @@
-"""Tests for Fireworks API: chat, streaming, tools, structured output, reasoning, vision, errors."""
+"""Tests for Fireworks API: chat, streaming, tools, structured output, reasoning, vision, embeddings, errors."""
 import json
+import math
 import os
 
 import pytest
@@ -7,11 +8,12 @@ import pytest
 from fireworks import Fireworks
 
 # Models used by scripts (must be available on serverless)
-MODEL_CHAT = "accounts/fireworks/models/deepseek-v3p1"
-MODEL_TOOLS = "accounts/fireworks/models/kimi-k2-instruct-0905"
-MODEL_STRUCTURED = "accounts/fireworks/models/deepseek-v3p1"
-MODEL_REASONING = "accounts/fireworks/models/deepseek-v3p2"
+MODEL_CHAT = "accounts/fireworks/models/llama-v3p3-70b-instruct"
+MODEL_TOOLS = "accounts/fireworks/models/qwen3-8b"
+MODEL_STRUCTURED = "accounts/fireworks/models/llama-v3p3-70b-instruct"
+MODEL_REASONING = "accounts/fireworks/models/deepseek-v4-pro"
 MODEL_VISION = "accounts/fireworks/models/kimi-k2p5"
+MODEL_EMBEDDINGS = "accounts/fireworks/models/nomic-embed-text-v1"
 
 # Skip tests that need a valid API key (error tests run without it or with invalid key)
 _has_key = bool(os.environ.get("FIREWORKS_API_KEY"))
@@ -190,7 +192,58 @@ def test_vision_image_url_returns_content():
     assert len(msg.content.strip()) > 0
 
 
-# --- 7. Errors ---
+# --- 7. Embeddings ---
+@skip_no_key
+def test_embeddings_returns_valid_vector():
+    client = _client()
+    response = client.embeddings.create(
+        model=MODEL_EMBEDDINGS,
+        input="Fireworks AI provides fast inference",
+    )
+    assert len(response.data) == 1
+    embedding = response.data[0].embedding
+    assert isinstance(embedding, list)
+    assert len(embedding) > 0
+    assert all(isinstance(x, (int, float)) for x in embedding)
+
+
+@skip_no_key
+def test_embeddings_batch_returns_multiple_vectors():
+    client = _client()
+    texts = ["First sentence", "Second sentence", "Third sentence"]
+    response = client.embeddings.create(
+        model=MODEL_EMBEDDINGS,
+        input=texts,
+    )
+    assert len(response.data) == len(texts)
+    for item in response.data:
+        assert isinstance(item.embedding, list)
+        assert len(item.embedding) > 0
+
+
+@skip_no_key
+def test_embeddings_cosine_similarity():
+    client = _client()
+    response = client.embeddings.create(
+        model=MODEL_EMBEDDINGS,
+        input=["Machine learning", "Deep learning", "Apple pie"],
+    )
+    vectors = [item.embedding for item in response.data]
+    assert len(vectors) == 3
+
+    def cosine(a, b):
+        dot = sum(x * y for x, y in zip(a, b))
+        norm_a = math.sqrt(sum(x * x for x in a))
+        norm_b = math.sqrt(sum(x * x for x in b))
+        return dot / (norm_a * norm_b)
+
+    # Related terms should be more similar than unrelated
+    sim_related = cosine(vectors[0], vectors[1])  # ML ↔ DL
+    sim_unrelated = cosine(vectors[0], vectors[2])  # ML ↔ pie
+    assert sim_related > sim_unrelated
+
+
+# --- 8. Errors ---
 @skip_no_key
 def test_error_404_invalid_model():
     from fireworks import NotFoundError
